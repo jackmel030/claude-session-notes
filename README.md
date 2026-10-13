@@ -2,26 +2,42 @@
 
 **English** | [繁體中文](README.zh-TW.md)
 
-A sidebar sticky-notes mod for Claude Code: jot down notes for the current session, then edit, delete or collapse them.
+Sidebar sticky notes for the current Claude Code session: add, edit, delete and collapse notes.
+
+**Expanded** (docked beside the transcript in fullscreen):
 
 ```
-┌──────────────────────────┐
-│ New note                  │
-│ Title [optional     ]     │
-│ Body  [press Enter  ]     │
-└──────────────────────────┘
-2 notes [ Expand all ] [ Collapse all ]
-
-╭──────────────────────────╮
-│ ▾ 1. Groceries     ✎  ✕  │
-│ Milk, eggs                │
-╰──────────────────────────╯
-╭──────────────────────────╮
-│ ▸ 2. Reply to MR   ✎  ✕  │
-╰──────────────────────────╯
+┌─ Notes ──────────────────────────────────┐
+│                               ◂ Collapse │
+│                                          │
+│ ┌──────────────────────────────────────┐ │
+│ │ New note                             │ │
+│ │ Title [optional              ]       │ │
+│ │ Body  [type, press Enter     ]       │ │
+│ └──────────────────────────────────────┘ │
+│                                          │
+│ 2 notes [ Expand all ] [ Collapse all ]  │
+│                                          │
+│ ╭──────────────────────────────────────╮ │
+│ │ ▾ 1. Groceries                  ✎  ✕ │ │
+│ │ Milk, eggs                           │ │
+│ ╰──────────────────────────────────────╯ │
+│                                          │
+│ ╭──────────────────────────────────────╮ │
+│ │ ▸ 2. Reply to MR                ✎  ✕ │ │
+│ ╰──────────────────────────────────────╯ │
+└──────────────────────────────────────────┘
 ```
 
-The interface text is in Traditional Chinese; the sketch above is translated for reference.
+**Collapsed** (a one-line row above the prompt; click it or press the shortcut to expand):
+
+```
+▸ Notes: 2  click to expand
+────────────────────────────────────────────
+> _
+```
+
+The interface text is in Traditional Chinese; the sketches above are translated for reference.
 
 ## Requirements
 
