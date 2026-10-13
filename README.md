@@ -12,8 +12,8 @@ Sidebar sticky notes for the current Claude Code session: add, edit, delete and 
 │                                          │
 │ ┌──────────────────────────────────────┐ │
 │ │ New note                             │ │
-│ │ Title [optional              ]       │ │
-│ │ Body  [type, press Enter     ]       │ │
+│ │ Title [optional               ]      │ │
+│ │ Body  [type, then Enter to add]      │ │
 │ └──────────────────────────────────────┘ │
 │                                          │
 │ 2 notes [ Expand all ] [ Collapse all ]  │
@@ -32,12 +32,10 @@ Sidebar sticky notes for the current Claude Code session: add, edit, delete and 
 **Collapsed** (a one-line row above the prompt; click it or press the shortcut to expand):
 
 ```
-▸ Notes: 2  click to expand
+▸ Notes (2) click to expand
 ────────────────────────────────────────────
 > _
 ```
-
-The interface text is in Traditional Chinese; the sketches above are translated for reference.
 
 ## Requirements
 
@@ -58,12 +56,12 @@ Answer `y` when asked to add the marketplace, then pick the user scope (the defa
 | Action | How |
 | --- | --- |
 | Open the notes | Opens automatically when a session starts |
-| Collapse the panel | Press `◂ 收合` at the panel's top right, type `/notes`, or use the shortcut |
-| Expand the panel | Press `▸ 記事 N 則` above the prompt, type `/notes`, or use the shortcut |
+| Collapse the panel | Press `◂ Collapse` at the panel's top right, type `/notes`, or use the shortcut |
+| Expand the panel | Press `▸ Notes (N)` above the prompt, type `/notes`, or use the shortcut |
 | Add | Fill in a title (optional) and a body, press Enter in either field |
 | Collapse / expand one note | Press `▸` / `▾` on its title row |
-| Collapse / expand all | Press `[ 全部收合 ]` / `[ 全部展開 ]` |
-| Edit | Press `✎`, then Enter or `[ 儲存 ]` to save; saving with both fields empty deletes the note |
+| Collapse / expand all | Press `[ Collapse all ]` / `[ Expand all ]` |
+| Edit | Press `✎`, then Enter or `[ Save ]` to save; saving with both fields empty deletes the note |
 | Delete | Press `✕` (no confirmation) |
 | Keyboard | `ctrl+x tab` to focus the panel, Tab to move, ↑↓ to scroll, Esc to return to the prompt |
 

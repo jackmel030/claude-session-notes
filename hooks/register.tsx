@@ -4,8 +4,8 @@ import type { EngineInterface, Register } from 'claude-code'
 import type { Draft, Note } from '../types'
 
 const PANE = 'session-notes'
-const TITLE = '記事'
-const UNTITLED = '（無標題）'
+const TITLE = 'Notes'
+const UNTITLED = '(untitled)'
 const TOGGLE_ACTION = 'app:cycleDiffBase'
 const EMPTY: Draft = { title: '', body: '' }
 
@@ -53,15 +53,15 @@ export const register: Register = on => {
     if (pane !== undefined && !(await read($, isPaneClosed))) {
       await collapsePane($)
 
-      return { text: '記事便籤已收合。' }
+      return { text: 'Notes panel collapsed.' }
     }
     await update($, isPaneClosed, () => false)
     const opened = await $.ui.open({ id: PANE, title: TITLE, focus: true, columns: 40 })
 
     return {
       text: opened.isPlaced
-        ? '記事便籤已展開。'
-        : `記事便籤已開啟，但目前放不下：${opened.reason}`,
+        ? 'Notes panel expanded.'
+        : `Notes panel opened but cannot be shown yet: ${opened.reason}`,
     }
   })
 
@@ -84,7 +84,7 @@ export const register: Register = on => {
       <Box>
         <Button
           key="expand-pane"
-          label={`▸ 記事 ${count} 則`}
+          label={`▸ Notes (${count})`}
           plain
           action={TOGGLE_ACTION}
           onPress={async () => {
@@ -92,7 +92,7 @@ export const register: Register = on => {
             await $.ui.open({ id: PANE, title: TITLE, focus: true, columns: 40 })
           }}
         />
-        <Text dimColor> 按一下展開</Text>
+        <Text dimColor> click to expand</Text>
       </Box>
     )
   })
@@ -106,7 +106,7 @@ export const register: Register = on => {
 
       return (
         <Box flexDirection="column">
-          {list.length === 0 && <Text dimColor>尚無記事。</Text>}
+          {list.length === 0 && <Text dimColor>No notes yet.</Text>}
           {list.map((note, index) => (
             <Box key={`card-${note.id}`} flexDirection="column" borderStyle="round" paddingX={1}>
               <Text bold>
@@ -168,48 +168,48 @@ export const register: Register = on => {
         <Box justifyContent="flex-end">
           <Button
             key="collapse-pane"
-            label="◂ 收合"
+            label="◂ Collapse"
             plain
             action={TOGGLE_ACTION}
             onPress={() => collapsePane($)}
           />
         </Box>
         <Box flexDirection="column" borderStyle="single" paddingX={1}>
-          <Text bold>新增記事</Text>
+          <Text bold>New note</Text>
           <Input
             key="new-title"
-            label="標題 "
-            placeholder="選填"
+            label="Title "
+            placeholder="optional"
             value={newDraft.title}
-            submitLabel="新增"
+            submitLabel="add"
             autoFocus
             onInput={(title: string) => update($, draft, d => ({ ...d, title }))}
             onSubmit={(title: string) => add({ ...newDraft, title })}
           />
           <Input
             key="new-body"
-            label="內容 "
-            placeholder="輸入後按 Enter 新增"
+            label="Body  "
+            placeholder="type, then Enter to add"
             value={newDraft.body}
-            submitLabel="新增"
+            submitLabel="add"
             onInput={(body: string) => update($, draft, d => ({ ...d, body }))}
             onSubmit={(body: string) => add({ ...newDraft, body })}
           />
         </Box>
 
         {list.length === 0 ? (
-          <Text dimColor>尚無記事。</Text>
+          <Text dimColor>No notes yet.</Text>
         ) : (
           <Box>
-            <Text dimColor>共 {list.length} 則 </Text>
+            <Text dimColor>{list.length === 1 ? '1 note' : `${list.length} notes`} </Text>
             <Button
               key="expand-all"
-              label="全部展開"
+              label="Expand all"
               onPress={() => update($, collapsedIds, () => [])}
             />
             <Button
               key="collapse-all"
-              label="全部收合"
+              label="Collapse all"
               onPress={() => update($, collapsedIds, () => list.map(one => one.id))}
             />
           </Box>
@@ -222,20 +222,20 @@ export const register: Register = on => {
             return (
               <Box key={`card-${note.id}`} flexDirection="column">
                 <Box flexDirection="column" borderStyle="round" borderColor="yellow" paddingX={1}>
-                  <Text bold>編輯第 {index + 1} 則</Text>
+                  <Text bold>Editing note {index + 1}</Text>
                   <Input
                     key={`edit-title-${note.id}`}
-                    label="標題 "
+                    label="Title "
                     value={changes.title}
-                    submitLabel="儲存"
+                    submitLabel="save"
                     onInput={(title: string) => update($, editDraft, d => ({ ...d, title }))}
                     onSubmit={(title: string) => save(note.id, { ...changes, title })}
                   />
                   <Input
                     key={`edit-body-${note.id}`}
-                    label="內容 "
+                    label="Body  "
                     value={changes.body}
-                    submitLabel="儲存"
+                    submitLabel="save"
                     onInput={(body: string) => update($, editDraft, d => ({ ...d, body }))}
                     onSubmit={(body: string) => save(note.id, { ...changes, body })}
                   />
@@ -243,12 +243,12 @@ export const register: Register = on => {
                 <Box>
                   <Button
                     key={`save-${note.id}`}
-                    label="儲存"
+                    label="Save"
                     onPress={() => save(note.id, changes)}
                   />
                   <Button
                     key={`cancel-${note.id}`}
-                    label="取消"
+                    label="Cancel"
                     onPress={() => update($, editingId, () => null)}
                   />
                 </Box>

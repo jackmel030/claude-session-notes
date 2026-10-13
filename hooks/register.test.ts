@@ -5,7 +5,7 @@ import type { Engine } from 'claude-code/testing'
 const SURFACES = ['terminal', 'desktop'] as const
 
 const paneProps = (bodyRows: number) => ({
-  title: '記事',
+  title: 'Notes',
   isFocused: true,
   bodyColumns: 40,
   placement: 'dock' as const,
@@ -14,7 +14,7 @@ const paneProps = (bodyRows: number) => ({
 })
 
 for (const surface of SURFACES) {
-  test(`${surface}: 標題與內容分開新增、修改、刪除`, async $ => {
+  test(`${surface}: adds, edits and deletes notes with separate title and body`, async $ => {
     const ui = await $.ui.mount({
       plugin: 'session-notes',
       surface,
@@ -23,44 +23,44 @@ for (const surface of SURFACES) {
       props: paneProps(20),
     })
 
-    expect(await ui.find({ type: 'Text', text: '尚無記事。' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'No notes yet.' })).toBeDefined()
 
-    await ui.input({ key: 'new-title', text: '採買', kind: 'change' })
-    await ui.input({ key: 'new-body', text: '  牛奶、雞蛋  ' })
-    expect(await ui.find({ key: 'toggle-1' })).toMatchObject({ props: { label: '▾ 1. 採買' } })
-    expect(await ui.find({ type: 'Text', text: '牛奶、雞蛋' })).toBeDefined()
+    await ui.input({ key: 'new-title', text: 'Groceries', kind: 'change' })
+    await ui.input({ key: 'new-body', text: '  Milk, eggs  ' })
+    expect(await ui.find({ key: 'toggle-1' })).toMatchObject({ props: { label: '▾ 1. Groceries' } })
+    expect(await ui.find({ type: 'Text', text: 'Milk, eggs' })).toBeDefined()
     expect((await ui.find({ key: 'new-title' }))?.props.value).toBe('')
     expect((await ui.find({ key: 'new-body' }))?.props.value).toBe('')
 
     await ui.input({ key: 'new-body', text: '   ' })
-    await ui.input({ key: 'new-body', text: '回覆 MR' })
-    expect(await ui.find({ key: 'toggle-2' })).toMatchObject({ props: { label: '▾ 2. （無標題）' } })
+    await ui.input({ key: 'new-body', text: 'Reply to MR' })
+    expect(await ui.find({ key: 'toggle-2' })).toMatchObject({ props: { label: '▾ 2. (untitled)' } })
     expect(await ui.find({ key: 'toggle-3' })).toBeUndefined()
 
     await ui.press({ key: 'edit-btn-1' })
-    expect((await ui.find({ key: 'edit-title-1' }))?.props.value).toBe('採買')
-    expect((await ui.find({ key: 'edit-body-1' }))?.props.value).toBe('牛奶、雞蛋')
-    await ui.input({ key: 'edit-title-1', text: '超市', kind: 'change' })
+    expect((await ui.find({ key: 'edit-title-1' }))?.props.value).toBe('Groceries')
+    expect((await ui.find({ key: 'edit-body-1' }))?.props.value).toBe('Milk, eggs')
+    await ui.input({ key: 'edit-title-1', text: 'Supermarket', kind: 'change' })
     await ui.press({ key: 'save-1' })
-    expect(await ui.find({ key: 'toggle-1' })).toMatchObject({ props: { label: '▾ 1. 超市' } })
+    expect(await ui.find({ key: 'toggle-1' })).toMatchObject({ props: { label: '▾ 1. Supermarket' } })
     expect(await ui.find({ key: 'edit-title-1' })).toBeUndefined()
 
     await ui.press({ key: 'edit-btn-2' })
-    await ui.input({ key: 'edit-body-2', text: '改掉', kind: 'change' })
+    await ui.input({ key: 'edit-body-2', text: 'changed', kind: 'change' })
     await ui.press({ key: 'cancel-2' })
-    expect(await ui.find({ type: 'Text', text: '回覆 MR' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'Reply to MR' })).toBeDefined()
 
     await ui.press({ key: 'del-1' })
     expect(await ui.find({ key: 'toggle-1' })).toBeUndefined()
-    expect(await ui.find({ key: 'toggle-2' })).toMatchObject({ props: { label: '▾ 1. （無標題）' } })
+    expect(await ui.find({ key: 'toggle-2' })).toMatchObject({ props: { label: '▾ 1. (untitled)' } })
 
     await ui.press({ key: 'edit-btn-2' })
     await ui.input({ key: 'edit-title-2', text: '', kind: 'change' })
     await ui.input({ key: 'edit-body-2', text: '' })
-    expect(await ui.find({ type: 'Text', text: '尚無記事。' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'No notes yet.' })).toBeDefined()
   })
 
-  test(`${surface}: 單則與全部收合、展開`, async $ => {
+  test(`${surface}: collapses and expands one note or all`, async $ => {
     const ui = await $.ui.mount({
       plugin: 'session-notes',
       surface,
@@ -68,31 +68,31 @@ for (const surface of SURFACES) {
       requestId: 'session-notes',
       props: paneProps(20),
     })
-    await ui.input({ key: 'new-title', text: '甲', kind: 'change' })
-    await ui.input({ key: 'new-body', text: '甲內容' })
-    await ui.input({ key: 'new-title', text: '乙', kind: 'change' })
-    await ui.input({ key: 'new-body', text: '乙內容' })
+    await ui.input({ key: 'new-title', text: 'Alpha', kind: 'change' })
+    await ui.input({ key: 'new-body', text: 'Alpha body' })
+    await ui.input({ key: 'new-title', text: 'Beta', kind: 'change' })
+    await ui.input({ key: 'new-body', text: 'Beta body' })
 
     await ui.press({ key: 'toggle-1' })
-    expect(await ui.find({ key: 'toggle-1' })).toMatchObject({ props: { label: '▸ 1. 甲' } })
-    expect(await ui.find({ type: 'Text', text: '甲內容' })).toBeUndefined()
+    expect(await ui.find({ key: 'toggle-1' })).toMatchObject({ props: { label: '▸ 1. Alpha' } })
+    expect(await ui.find({ type: 'Text', text: 'Alpha body' })).toBeUndefined()
     expect(await ui.find({ key: 'edit-btn-1' })).toMatchObject({ props: { label: '✎' } })
     expect(await ui.find({ key: 'del-1' })).toMatchObject({ props: { label: '✕' } })
-    expect(await ui.find({ type: 'Text', text: '乙內容' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'Beta body' })).toBeDefined()
 
     await ui.press({ key: 'toggle-1' })
-    expect(await ui.find({ type: 'Text', text: '甲內容' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'Alpha body' })).toBeDefined()
 
     await ui.press({ key: 'collapse-all' })
-    expect(await ui.find({ type: 'Text', text: '甲內容' })).toBeUndefined()
-    expect(await ui.find({ type: 'Text', text: '乙內容' })).toBeUndefined()
+    expect(await ui.find({ type: 'Text', text: 'Alpha body' })).toBeUndefined()
+    expect(await ui.find({ type: 'Text', text: 'Beta body' })).toBeUndefined()
 
     await ui.press({ key: 'expand-all' })
-    expect(await ui.find({ type: 'Text', text: '甲內容' })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: '乙內容' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'Alpha body' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'Beta body' })).toBeDefined()
   })
 
-  test(`${surface}: 記事多時不截斷，交給面板捲動`, async $ => {
+  test(`${surface}: keeps every note for the pane to scroll`, async $ => {
     const ui = await $.ui.mount({
       plugin: 'session-notes',
       surface,
@@ -101,11 +101,11 @@ for (const surface of SURFACES) {
       props: paneProps(5),
     })
     for (let i = 1; i <= 12; i += 1) {
-      await ui.input({ key: 'new-body', text: `第${i}則` })
+      await ui.input({ key: 'new-body', text: `Note ${i}` })
     }
 
     expect(await ui.find({ key: 'toggle-12' })).toBeDefined()
-    expect(await ui.find({ type: 'Text', text: '第12則' })).toBeDefined()
+    expect(await ui.find({ type: 'Text', text: 'Note 12' })).toBeDefined()
   })
 }
 
@@ -126,7 +126,7 @@ const fakeEngine = (on: On, placed: boolean) => {
   })
   on('ui.panes', async () => ({
     value: isOpen
-      ? [{ id: 'session-notes', title: '記事', isShown: placed, isFocused: false, isPlaced: placed }]
+      ? [{ id: 'session-notes', title: 'Notes', isShown: placed, isFocused: false, isPlaced: placed }]
       : [],
   }))
   on('ui.render', { component: 'AbovePrompt' }, async ($, e) => {
@@ -152,7 +152,7 @@ const mountBand = ($: Engine) =>
     props: { hasSurvey: false, isWorking: false, maxRows: 5, bodyColumns: 80, scroll: { offset: 0, bodyRows: 5 }, view: {} },
   })
 
-test('session 開始預設開啟便籤，不顯示展開列', async ($, on) => {
+test('opens the pane when the session starts, without the expand row', async ($, on) => {
   const calls = fakeEngine(on, true)
   await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
   expect(calls).toEqual(['open:session-notes'])
@@ -161,7 +161,7 @@ test('session 開始預設開啟便籤，不顯示展開列', async ($, on) => {
   expect(await band.find({ key: 'expand-pane' })).toBeUndefined()
 })
 
-test('終端太窄放不下時改顯示展開列', async ($, on) => {
+test('shows the expand row when the terminal is too narrow', async ($, on) => {
   fakeEngine(on, false)
   await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
 
@@ -169,7 +169,7 @@ test('終端太窄放不下時改顯示展開列', async ($, on) => {
   expect(await band.find({ key: 'expand-pane' })).toBeDefined()
 })
 
-test('按收合關閉面板並出現展開列，按展開列再打開', async ($, on) => {
+test('collapse closes the pane and shows the expand row, which reopens it', async ($, on) => {
   const calls = fakeEngine(on, true)
   await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
   const pane = await $.ui.mount({
@@ -179,38 +179,38 @@ test('按收合關閉面板並出現展開列，按展開列再打開', async ($
     requestId: 'session-notes',
     props: paneProps(20),
   })
-  await pane.input({ key: 'new-body', text: '甲' })
+  await pane.input({ key: 'new-body', text: 'Alpha' })
 
   await pane.press({ key: 'collapse-pane' })
   expect(calls).toEqual(['open:session-notes', 'close:session-notes'])
 
   const band = await mountBand($)
-  expect(await band.find({ key: 'expand-pane' })).toMatchObject({ props: { label: '▸ 記事 1 則' } })
+  expect(await band.find({ key: 'expand-pane' })).toMatchObject({ props: { label: '▸ Notes (1)' } })
 
   await band.press({ key: 'expand-pane' })
   expect(calls).toEqual(['open:session-notes', 'close:session-notes', 'open:session-notes'])
   expect(await band.find({ key: 'expand-pane' })).toBeUndefined()
 })
 
-test('/notes 切換收合與展開', async ($, on) => {
+test('/notes toggles collapse and expand', async ($, on) => {
   const calls = fakeEngine(on, true)
   await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
 
-  expect((await runNotes($)).text).toBe('記事便籤已收合。')
-  expect((await runNotes($)).text).toBe('記事便籤已展開。')
+  expect((await runNotes($)).text).toBe('Notes panel collapsed.')
+  expect((await runNotes($)).text).toBe('Notes panel expanded.')
   expect(calls).toEqual(['open:session-notes', 'close:session-notes', 'open:session-notes'])
 })
 
-test('/notes 在終端太窄時說明原因，再按一次可收合', async ($, on) => {
+test('/notes explains a narrow terminal and collapses on the next run', async ($, on) => {
   const calls = fakeEngine(on, false)
   await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
 
-  expect((await runNotes($)).text).toBe('記事便籤已開啟，但目前放不下：too narrow')
-  expect((await runNotes($)).text).toBe('記事便籤已收合。')
+  expect((await runNotes($)).text).toBe('Notes panel opened but cannot be shown yet: too narrow')
+  expect((await runNotes($)).text).toBe('Notes panel collapsed.')
   expect(calls).toEqual(['open:session-notes', 'open:session-notes', 'close:session-notes'])
 })
 
-test('mobile 只顯示記事清單', async $ => {
+test('mobile shows the notes read-only', async $ => {
   const ui = await $.ui.mount({
     plugin: 'session-notes',
     surface: 'mobile',
@@ -219,5 +219,5 @@ test('mobile 只顯示記事清單', async $ => {
     props: { ...paneProps(10), isFocused: false, placement: 'inline' },
   })
 
-  expect(await ui.find({ type: 'Text', text: '尚無記事。' })).toBeDefined()
+  expect(await ui.find({ type: 'Text', text: 'No notes yet.' })).toBeDefined()
 })
