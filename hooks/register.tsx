@@ -6,6 +6,7 @@ import type { Draft, Note } from '../types'
 const PANE = 'session-notes'
 const TITLE = '記事'
 const UNTITLED = '（無標題）'
+const TOGGLE_ACTION = 'app:cycleDiffBase'
 const EMPTY: Draft = { title: '', body: '' }
 
 const items = atom({ plugin: 'session-notes', key: 'items' } as const, [])
@@ -85,6 +86,7 @@ export const register: Register = on => {
           key="expand-pane"
           label={`▸ 記事 ${count} 則`}
           plain
+          action={TOGGLE_ACTION}
           onPress={async () => {
             await update($, isPaneClosed, () => false)
             await $.ui.open({ id: PANE, title: TITLE, focus: true, columns: 40 })
@@ -168,6 +170,7 @@ export const register: Register = on => {
             key="collapse-pane"
             label="◂ 收合"
             plain
+            action={TOGGLE_ACTION}
             onPress={() => collapsePane($)}
           />
         </Box>

@@ -42,8 +42,8 @@ Answer `y` when asked to add the marketplace, then pick the user scope (the defa
 | Action | How |
 | --- | --- |
 | Open the notes | Opens automatically when a session starts |
-| Collapse the panel | Press `◂ 收合` at the panel's top right, or type `/notes` |
-| Expand the panel | Press `▸ 記事 N 則` above the prompt, or type `/notes` |
+| Collapse the panel | Press `◂ 收合` at the panel's top right, type `/notes`, or use the shortcut |
+| Expand the panel | Press `▸ 記事 N 則` above the prompt, type `/notes`, or use the shortcut |
 | Add | Fill in a title (optional) and a body, press Enter in either field |
 | Collapse / expand one note | Press `▸` / `▾` on its title row |
 | Collapse / expand all | Press `[ 全部收合 ]` / `[ 全部展開 ]` |
@@ -53,6 +53,23 @@ Answer `y` when asked to add the marketplace, then pick the user scope (the defa
 
 - In fullscreen the panel docks beside the transcript; otherwise it sits above the prompt. Opening automatically needs a terminal at least 144 columns wide; narrower terminals show the expand row instead.
 - Notes live in the current session only and are cleared when it ends.
+
+## Shortcut (optional)
+
+Add one line to the `Global` block of `~/.claude/keybindings.json` to toggle the panel with `ctrl+x ctrl+n`:
+
+```json
+{
+  "context": "Global",
+  "bindings": {
+    "ctrl+x ctrl+n": "app:cycleDiffBase"
+  }
+}
+```
+
+- If you already have a `Global` block, merge the line into it rather than replacing it; restart the session to apply.
+- Both keystrokes carry `ctrl`, so the chord also works with a CJK input method active (bare letters get captured by the IME for composition).
+- How it works: the panel's collapse/expand buttons are attached to the `app:cycleDiffBase` action and receive it whenever the engine is not handling it; while the `/diff` panel is open, the chord cycles the diff base instead.
 
 ## Development
 
