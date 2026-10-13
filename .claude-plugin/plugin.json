@@ -1,0 +1,7 @@
+{
+  "name": "session-notes",
+  "version": "0.2.0",
+  "description": "側邊欄記事便籤：本 session 的記事可新增、修改、刪除、收合",
+  "author": { "name": "jackmel030" },
+  "types": "./types/index.d.ts"
+}
