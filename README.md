@@ -68,6 +68,14 @@ Answer `y` when asked to add the marketplace, then pick the user scope (the defa
 - In fullscreen the panel docks beside the transcript; otherwise it sits above the prompt. Opening automatically needs a terminal at least 144 columns wide; narrower terminals show the expand row instead.
 - Notes live in the current session only and are cleared when it ends.
 
+## Let Claude add notes
+
+The mod gives Claude an `add_notes` tool, so you can ask in plain words, for example:
+
+> Add the three follow-ups we just discussed to my notes.
+
+Claude adds them in one call (up to 50 notes, each with an optional title and a body), and the panel updates at once. The call shows up in the transcript like any other tool call, and your permission settings apply to it (`mcp__session-notes__add_notes`).
+
 ## Shortcut (optional)
 
 Add one line to the `Global` block of `~/.claude/keybindings.json` to toggle the panel with `ctrl+x ctrl+n`:

@@ -70,6 +70,14 @@ Claude Code 2.1.287 以上（`claude --version` 確認，`claude update` 升級�
 - 終端機全螢幕時便籤停靠在側邊，否則顯示在 prompt 上方。自動打開需要終端寬度 ≥ 144 欄，較窄時改顯示展開列。
 - 記事只存在當下 session，關閉後清空。
 
+## 讓 Claude 幫你新增記事
+
+mod 提供 Claude 一個 `add_notes` 工具，直接用口語交代即可，例如：
+
+> 把剛才討論的三個待辦加進我的 notes。
+
+Claude 會一次加入多則（每次最多 50 則，每則可有標題與內容），面板即時更新。這次呼叫會和其他工具呼叫一樣出現在對話紀錄裡，也適用你的權限設定（`mcp__session-notes__add_notes`）。
+
 ## 快捷鍵（選用）
 
 在 `~/.claude/keybindings.json` 的 `Global` 區塊加一行，就能用 `ctrl+x ctrl+n` 切換面板收合／展開：

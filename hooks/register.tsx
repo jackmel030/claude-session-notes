@@ -31,6 +31,46 @@ const tidy = (input: Draft): Draft | null => {
   return { title: title === '' ? UNTITLED : title, body }
 }
 
+const ADD_NOTES = 'add_notes'
+const MAX_BATCH = 50
+
+const appendNotes = (
+  $: EngineInterface,
+  drafts: readonly Draft[],
+): Promise<Note[]> => {
+  const notes = drafts.map(tidy).filter((one): one is Draft => one !== null)
+  let added: Note[] = []
+
+  return update($, items, all => {
+    const start = all.reduce((max, one) => Math.max(max, one.id), 0) + 1
+    added = notes.map((note, index) => ({ id: start + index, ...note }))
+
+    return [...all, ...added]
+  }).then(() => added)
+}
+
+const toDrafts = (value: unknown): Draft[] | string => {
+  if (!Array.isArray(value) || value.length === 0) {
+    return '`notes` must be a non-empty array of { title?, body? }.'
+  }
+  if (value.length > MAX_BATCH) {
+    return `At most ${MAX_BATCH} notes per call.`
+  }
+  const drafts: Draft[] = []
+  for (const one of value) {
+    if (typeof one !== 'object' || one === null) {
+      return 'Each note must be an object with optional string `title` and `body`.'
+    }
+    const { title = '', body = '' } = one as { title?: unknown; body?: unknown }
+    if (typeof title !== 'string' || typeof body !== 'string') {
+      return 'Each note must be an object with optional string `title` and `body`.'
+    }
+    drafts.push({ title, body })
+  }
+
+  return drafts
+}
+
 const collapsePane = async ($: EngineInterface) => {
   await update($, isPaneClosed, () => true)
   await $.ui.close({ id: PANE })
@@ -41,6 +81,32 @@ export const register: Register = on => {
     await $.command.register({
       name: 'notes',
       description: 'Expand or collapse the session notes panel',
+    })
+    await $.tool.register({
+      name: ADD_NOTES,
+      description:
+        "Add one or more notes to the user's session notes panel (a sidebar the user reads while working). " +
+        'Use when the user asks to save, jot down or add something to their notes. ' +
+        `Up to ${MAX_BATCH} notes per call; each note has an optional short title and a body.`,
+      inputSchema: {
+        type: 'object',
+        properties: {
+          notes: {
+            type: 'array',
+            minItems: 1,
+            maxItems: MAX_BATCH,
+            items: {
+              type: 'object',
+              properties: {
+                title: { type: 'string', description: 'Short heading; optional.' },
+                body: { type: 'string', description: 'The note text.' },
+              },
+            },
+          },
+        },
+        required: ['notes'],
+      },
+      isDeferred: false,
     })
     if (!(await read($, isPaneClosed))) {
       const opened = await $.ui.open({ id: PANE, title: TITLE, columns: 40 })
@@ -69,6 +135,22 @@ export const register: Register = on => {
         : `Notes panel opened but cannot be shown yet: ${opened.reason}`,
     }
   })
+
+  on('tool.call', { tool: 'mcp__session-notes__add_notes' }, async ($, e) => {
+    const drafts = toDrafts((e as unknown as { notes?: unknown }).notes)
+    if (typeof drafts === 'string') {
+      return { deny: drafts }
+    }
+    const added = await appendNotes($, drafts)
+    if (added.length === 0) {
+      return { deny: 'Every note was empty; nothing was added.' }
+    }
+    const total = (await read($, items)).length
+
+    return {
+      result: `Added ${added.length} note(s) to the session notes panel (now ${total} in total).`,
+    }
+  }).catch(() => ({ deny: 'The notes could not be added.' }))
 
   on('ui.close', { id: PANE }, async ($, e, next) => {
     if (e.origin.kind !== 'unload') {
@@ -140,15 +222,10 @@ export const register: Register = on => {
       )
 
     const add = (input: Draft) => {
-      const note = tidy(input)
-      if (note === null) {
+      if (tidy(input) === null) {
         return
       }
-      void update($, items, all => {
-        const id = all.reduce((max, one) => Math.max(max, one.id), 0) + 1
-
-        return [...all, { id, ...note }]
-      })
+      void appendNotes($, [input])
       void update($, draft, () => EMPTY)
     }
 

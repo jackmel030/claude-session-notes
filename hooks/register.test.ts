@@ -114,6 +114,7 @@ const fakeEngine = (on: On, placed: boolean) => {
   let isOpen = false
   on('session.start', async (_, e) => ({ cwd: e.cwd }))
   on('command.register', async () => ({ value: { command: 'notes' } }))
+  on('tool.register', async () => ({ value: { tool: 'mcp__session-notes__add_notes' } }))
   on('ui.open', async (_, e) => {
     calls.push(`open:${e.id}`)
     isOpen = true
@@ -237,6 +238,46 @@ for (const surface of SURFACES) {
     expect(await ui.find({ key: 'edit-body-preview-1' })).toMatchObject({ text: long })
   })
 }
+
+const addNotes = ($: Engine, notes: unknown) =>
+  $.tool.call({ tool: 'mcp__session-notes__add_notes', notes } as never)
+
+test('add_notes tool adds several notes at once and the pane shows them', async $ => {
+  const answer = await addNotes($, [
+    { title: 'Deploy', body: 'Ship 0.6.0 after review' },
+    { body: '  call the vendor  ' },
+    { title: '   ', body: '' },
+  ])
+  expect(answer).toMatchObject({
+    result: 'Added 2 note(s) to the session notes panel (now 2 in total).',
+  })
+
+  const ui = await $.ui.mount({
+    plugin: 'session-notes',
+    surface: 'terminal',
+    component: 'Pane',
+    requestId: 'session-notes',
+    props: paneProps(20),
+  })
+  expect(await ui.find({ key: 'toggle-1' })).toMatchObject({ props: { label: '▾ 1. Deploy' } })
+  expect(await ui.find({ key: 'toggle-2' })).toMatchObject({ props: { label: '▾ 2. (untitled)' } })
+  expect(await ui.find({ type: 'Text', text: 'call the vendor' })).toBeDefined()
+
+  await ui.input({ key: 'new-body', text: 'typed by hand' })
+  expect(await ui.find({ key: 'toggle-3' })).toBeDefined()
+})
+
+test('add_notes tool refuses bad input', async $ => {
+  expect(await addNotes($, [])).toMatchObject({ deny: expect.any(String) })
+  expect(await addNotes($, 'not a list')).toMatchObject({ deny: expect.any(String) })
+  expect(await addNotes($, [{ title: 1 }])).toMatchObject({ deny: expect.any(String) })
+  expect(await addNotes($, [{ title: ' ', body: ' ' }])).toMatchObject({
+    deny: 'Every note was empty; nothing was added.',
+  })
+  expect(await addNotes($, Array.from({ length: 51 }, () => ({ body: 'x' })))).toMatchObject({
+    deny: 'At most 50 notes per call.',
+  })
+})
 
 test('mobile shows the notes read-only', async $ => {
   const ui = await $.ui.mount({

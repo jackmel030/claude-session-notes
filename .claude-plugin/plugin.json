@@ -1,6 +1,6 @@
 {
   "name": "session-notes",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Sidebar sticky notes for the current session: add, edit, delete and collapse notes",
   "author": { "name": "jackmel030" },
   "types": "./types/index.d.ts"
