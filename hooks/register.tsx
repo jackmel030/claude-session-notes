@@ -49,15 +49,19 @@ export const register: Register = on => {
   on('command.run', { command: 'notes' }, async $ => {
     const panes = await $.ui.panes()
     const pane = panes.find(one => one.id === PANE)
-    if (pane?.isPlaced) {
+    if (pane !== undefined && !(await read($, isPaneClosed))) {
       await collapsePane($)
 
       return { text: '記事便籤已收合。' }
     }
     await update($, isPaneClosed, () => false)
-    await $.ui.open({ id: PANE, title: TITLE, focus: true, columns: 40 })
+    const opened = await $.ui.open({ id: PANE, title: TITLE, focus: true, columns: 40 })
 
-    return { text: '記事便籤已展開。' }
+    return {
+      text: opened.isPlaced
+        ? '記事便籤已展開。'
+        : `記事便籤已開啟，但目前放不下：${opened.reason}`,
+    }
   })
 
   on('ui.close', { id: PANE }, async ($, e, next) => {

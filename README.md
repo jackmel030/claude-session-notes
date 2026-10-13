@@ -1,5 +1,7 @@
 # session-notes
 
+**繁體中文** | [English](README.en.md)
+
 Claude Code 的側邊欄記事便籤（mod）：在目前的 session 裡隨手記事，可新增、編輯、刪除、收合。
 
 ```

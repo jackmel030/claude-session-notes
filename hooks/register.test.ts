@@ -116,7 +116,7 @@ const fakeEngine = (on: On, placed: boolean) => {
   on('command.register', async () => ({ value: { command: 'notes' } }))
   on('ui.open', async (_, e) => {
     calls.push(`open:${e.id}`)
-    isOpen = placed
+    isOpen = true
     return { value: placed ? { isPlaced: true as const } : { isPlaced: false as const, reason: 'too narrow' } }
   })
   on('ui.close', async (_, e) => {
@@ -126,7 +126,7 @@ const fakeEngine = (on: On, placed: boolean) => {
   })
   on('ui.panes', async () => ({
     value: isOpen
-      ? [{ id: 'session-notes', title: '記事', isShown: true, isFocused: false, isPlaced: true }]
+      ? [{ id: 'session-notes', title: '記事', isShown: placed, isFocused: false, isPlaced: placed }]
       : [],
   }))
   on('ui.render', { component: 'AbovePrompt' }, async ($, e) => {
@@ -199,6 +199,15 @@ test('/notes 切換收合與展開', async ($, on) => {
   expect((await runNotes($)).text).toBe('記事便籤已收合。')
   expect((await runNotes($)).text).toBe('記事便籤已展開。')
   expect(calls).toEqual(['open:session-notes', 'close:session-notes', 'open:session-notes'])
+})
+
+test('/notes 在終端太窄時說明原因，再按一次可收合', async ($, on) => {
+  const calls = fakeEngine(on, false)
+  await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
+
+  expect((await runNotes($)).text).toBe('記事便籤已開啟，但目前放不下：too narrow')
+  expect((await runNotes($)).text).toBe('記事便籤已收合。')
+  expect(calls).toEqual(['open:session-notes', 'open:session-notes', 'close:session-notes'])
 })
 
 test('mobile 只顯示記事清單', async $ => {
