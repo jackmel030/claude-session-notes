@@ -9,6 +9,7 @@ declare module 'claude-code' {
       collapsedIds: number[]
       draft: Draft
       editDraft: Draft
+      isPaneClosed: boolean
     }
   }
 }

@@ -1,4 +1,6 @@
+import type { On } from 'claude-code'
 import { expect, test } from 'claude-code/testing'
+import type { Engine } from 'claude-code/testing'
 
 const SURFACES = ['terminal', 'desktop'] as const
 
@@ -107,20 +109,96 @@ for (const surface of SURFACES) {
   })
 }
 
-test('/notes 開啟便籤', async ($, on) => {
-  const opened: string[] = []
+const fakeEngine = (on: On, placed: boolean) => {
+  const calls: string[] = []
+  let isOpen = false
+  on('session.start', async (_, e) => ({ cwd: e.cwd }))
+  on('command.register', async () => ({ value: { command: 'notes' } }))
   on('ui.open', async (_, e) => {
-    opened.push(e.id)
-    return { value: { isPlaced: true } }
+    calls.push(`open:${e.id}`)
+    isOpen = placed
+    return { value: placed ? { isPlaced: true as const } : { isPlaced: false as const, reason: 'too narrow' } }
   })
-  const answer = await $.command.run({
+  on('ui.close', async (_, e) => {
+    calls.push(`close:${e.id}`)
+    isOpen = false
+    return { value: undefined }
+  })
+  on('ui.panes', async () => ({
+    value: isOpen
+      ? [{ id: 'session-notes', title: '記事', isShown: true, isFocused: false, isPlaced: true }]
+      : [],
+  }))
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e) => {
+    const { Box } = $.ui.resolve(e)
+    return Box({})
+  })
+  return calls
+}
+
+const runNotes = ($: Engine) =>
+  $.command.run({
     command: 'notes',
     args: '',
     origin: { kind: 'composer' },
     presentation: { isFullscreen: true, columns: 160 },
   })
-  expect(answer.text).toBe('記事便籤已開啟。')
-  expect(opened).toEqual(['session-notes'])
+
+const mountBand = ($: Engine) =>
+  $.ui.mount({
+    plugin: 'session-notes',
+    surface: 'terminal',
+    component: 'AbovePrompt',
+    props: { hasSurvey: false, isWorking: false, maxRows: 5, bodyColumns: 80, scroll: { offset: 0, bodyRows: 5 }, view: {} },
+  })
+
+test('session 開始預設開啟便籤，不顯示展開列', async ($, on) => {
+  const calls = fakeEngine(on, true)
+  await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
+  expect(calls).toEqual(['open:session-notes'])
+
+  const band = await mountBand($)
+  expect(await band.find({ key: 'expand-pane' })).toBeUndefined()
+})
+
+test('終端太窄放不下時改顯示展開列', async ($, on) => {
+  fakeEngine(on, false)
+  await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
+
+  const band = await mountBand($)
+  expect(await band.find({ key: 'expand-pane' })).toBeDefined()
+})
+
+test('按收合關閉面板並出現展開列，按展開列再打開', async ($, on) => {
+  const calls = fakeEngine(on, true)
+  await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
+  const pane = await $.ui.mount({
+    plugin: 'session-notes',
+    surface: 'terminal',
+    component: 'Pane',
+    requestId: 'session-notes',
+    props: paneProps(20),
+  })
+  await pane.input({ key: 'new-body', text: '甲' })
+
+  await pane.press({ key: 'collapse-pane' })
+  expect(calls).toEqual(['open:session-notes', 'close:session-notes'])
+
+  const band = await mountBand($)
+  expect(await band.find({ key: 'expand-pane' })).toMatchObject({ props: { label: '▸ 記事 1 則' } })
+
+  await band.press({ key: 'expand-pane' })
+  expect(calls).toEqual(['open:session-notes', 'close:session-notes', 'open:session-notes'])
+  expect(await band.find({ key: 'expand-pane' })).toBeUndefined()
+})
+
+test('/notes 切換收合與展開', async ($, on) => {
+  const calls = fakeEngine(on, true)
+  await $.session.start({ cwd: '/tmp', surface: 'terminal', isInteractive: true })
+
+  expect((await runNotes($)).text).toBe('記事便籤已收合。')
+  expect((await runNotes($)).text).toBe('記事便籤已展開。')
+  expect(calls).toEqual(['open:session-notes', 'close:session-notes', 'open:session-notes'])
 })
 
 test('mobile 只顯示記事清單', async $ => {

@@ -1,5 +1,5 @@
 import { atom, read, update } from 'claude-code'
-import type { Register } from 'claude-code'
+import type { EngineInterface, Register } from 'claude-code'
 
 import type { Draft, Note } from '../types'
 
@@ -13,6 +13,7 @@ const editingId = atom({ plugin: 'session-notes', key: 'editingId' } as const, n
 const collapsedIds = atom({ plugin: 'session-notes', key: 'collapsedIds' } as const, [])
 const draft = atom({ plugin: 'session-notes', key: 'draft' } as const, EMPTY)
 const editDraft = atom({ plugin: 'session-notes', key: 'editDraft' } as const, EMPTY)
+const isPaneClosed = atom({ plugin: 'session-notes', key: 'isPaneClosed' } as const, false)
 
 const tidy = (input: Draft): Draft | null => {
   const title = input.title.trim()
@@ -24,20 +25,70 @@ const tidy = (input: Draft): Draft | null => {
   return { title: title === '' ? UNTITLED : title, body }
 }
 
+const collapsePane = async ($: EngineInterface) => {
+  await update($, isPaneClosed, () => true)
+  await $.ui.close({ id: PANE })
+}
+
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: 'notes',
-      description: '開啟本 session 的記事便籤',
+      description: '展開或收合本 session 的記事便籤',
     })
+    if (!(await read($, isPaneClosed))) {
+      const opened = await $.ui.open({ id: PANE, title: TITLE, columns: 40 })
+      if (!opened.isPlaced) {
+        await update($, isPaneClosed, () => true)
+      }
+    }
 
     return next(e)
   })
 
   on('command.run', { command: 'notes' }, async $ => {
+    const panes = await $.ui.panes()
+    const pane = panes.find(one => one.id === PANE)
+    if (pane?.isPlaced) {
+      await collapsePane($)
+
+      return { text: '記事便籤已收合。' }
+    }
+    await update($, isPaneClosed, () => false)
     await $.ui.open({ id: PANE, title: TITLE, focus: true, columns: 40 })
 
-    return { text: '記事便籤已開啟。' }
+    return { text: '記事便籤已展開。' }
+  })
+
+  on('ui.close', { id: PANE }, async ($, e, next) => {
+    if (e.origin.kind !== 'unload') {
+      await update($, isPaneClosed, () => true)
+    }
+
+    return next(e)
+  }).catch(($, e, next) => next(e))
+
+  on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+    if (e.props.hasSurvey || !(await read($, isPaneClosed))) {
+      return next(e)
+    }
+    const { Box, Button, Text } = $.ui.resolve(e)
+    const count = (await read($, items)).length
+
+    return (
+      <Box>
+        <Button
+          key="expand-pane"
+          label={`▸ 記事 ${count} 則`}
+          plain
+          onPress={async () => {
+            await update($, isPaneClosed, () => false)
+            await $.ui.open({ id: PANE, title: TITLE, focus: true, columns: 40 })
+          }}
+        />
+        <Text dimColor> 按一下展開</Text>
+      </Box>
+    )
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
@@ -108,6 +159,14 @@ export const register: Register = on => {
 
     return (
       <Box flexDirection="column" gap={1}>
+        <Box justifyContent="flex-end">
+          <Button
+            key="collapse-pane"
+            label="◂ 收合"
+            plain
+            onPress={() => collapsePane($)}
+          />
+        </Box>
         <Box flexDirection="column" borderStyle="single" paddingX={1}>
           <Text bold>新增記事</Text>
           <Input
