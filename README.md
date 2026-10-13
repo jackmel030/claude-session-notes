@@ -58,7 +58,7 @@ Answer `y` when asked to add the marketplace, then pick the user scope (the defa
 | Open the notes | Opens automatically when a session starts |
 | Collapse the panel | Press `◂ Collapse` at the panel's top right, type `/notes`, or use the shortcut |
 | Expand the panel | Press `▸ Notes (N)` above the prompt, type `/notes`, or use the shortcut |
-| Add | Fill in a title (optional) and a body, press Enter in either field |
+| Add | Fill in a title (optional) and a body, press Enter in either field; text longer than the field is shown wrapped below it |
 | Collapse / expand one note | Press `▸` / `▾` on its title row |
 | Collapse / expand all | Press `[ Collapse all ]` / `[ Expand all ]` |
 | Edit | Press `✎`, then Enter or `[ Save ]` to save; saving with both fields empty deletes the note |

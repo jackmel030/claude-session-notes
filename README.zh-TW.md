@@ -60,7 +60,7 @@ Claude Code 2.1.287 以上（`claude --version` 確認，`claude update` 升級�
 | 開啟便籤 | 每個 session 開始時自動打開 |
 | 收合面板 | 按面板右上 `◂ Collapse`、輸入 `/notes`，或按快捷鍵 |
 | 展開面板 | 按 prompt 上方的 `▸ Notes (N)`、輸入 `/notes`，或按快捷鍵 |
-| 新增 | 填標題（選填）與內容，在任一欄按 Enter |
+| 新增 | 填標題（選填）與內容，在任一欄按 Enter；超出欄寬的文字會在欄位下方換行顯示全文 |
 | 收合／展開單則 | 按標題列 `▸` / `▾` |
 | 全部收合／展開 | 按 `[ Collapse all ]` / `[ Expand all ]` |
 | 編輯 | 按 `✎`，改完按 Enter 或 `[ Save ]`；標題與內容都清空再存等於刪除 |
