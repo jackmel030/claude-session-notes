@@ -1,60 +1,62 @@
 # session-notes
 
-**繁體中文** | [English](README.en.md)
+**English** | [繁體中文](README.zh-TW.md)
 
-Claude Code 的側邊欄記事便籤（mod）：在目前的 session 裡隨手記事，可新增、編輯、刪除、收合。
+A sidebar sticky-notes mod for Claude Code: jot down notes for the current session, then edit, delete or collapse them.
 
 ```
 ┌──────────────────────────┐
-│ 新增記事                  │
-│ 標題 [選填          ]     │
-│ 內容 [輸入後按 Enter]     │
+│ New note                  │
+│ Title [optional     ]     │
+│ Body  [press Enter  ]     │
 └──────────────────────────┘
-共 2 則 [ 全部展開 ] [ 全部收合 ]
+2 notes [ Expand all ] [ Collapse all ]
 
 ╭──────────────────────────╮
-│ ▾ 1. 採買          ✎  ✕  │
-│ 牛奶、雞蛋                │
+│ ▾ 1. Groceries     ✎  ✕  │
+│ Milk, eggs                │
 ╰──────────────────────────╯
 ╭──────────────────────────╮
-│ ▸ 2. 回覆 MR       ✎  ✕  │
+│ ▸ 2. Reply to MR   ✎  ✕  │
 ╰──────────────────────────╯
 ```
 
-## 需求
+The interface text is in Traditional Chinese; the sketch above is translated for reference.
 
-Claude Code 2.1.287 以上（`claude --version` 確認，`claude update` 升級）。
+## Requirements
 
-## 安裝
+Claude Code 2.1.287 or later (check with `claude --version`, upgrade with `claude update`).
 
-在 Claude Code 的 prompt 輸入：
+## Install
+
+At the Claude Code prompt, type:
 
 ```
 /plugin install session-notes --marketplace jackmel030/claude-session-notes
 ```
 
-詢問是否加入 marketplace 時按 `y`，scope 選 user（預設）即可。
+Answer `y` when asked to add the marketplace, then pick the user scope (the default).
 
-## 使用
+## Usage
 
-| 動作 | 操作 |
+| Action | How |
 | --- | --- |
-| 開啟便籤 | 每個 session 開始時自動打開 |
-| 收合面板 | 按面板右上 `◂ 收合`、輸入 `/notes`，或按快捷鍵 |
-| 展開面板 | 按 prompt 上方的 `▸ 記事 N 則`、輸入 `/notes`，或按快捷鍵 |
-| 新增 | 填標題（選填）與內容，在任一欄按 Enter |
-| 收合／展開單則 | 按標題列 `▸` / `▾` |
-| 全部收合／展開 | 按 `[ 全部收合 ]` / `[ 全部展開 ]` |
-| 編輯 | 按 `✎`，改完按 Enter 或 `[ 儲存 ]`；標題與內容都清空再存等於刪除 |
-| 刪除 | 按 `✕`（不再確認） |
-| 鍵盤操作便籤 | `ctrl+x tab` 進入，Tab 移動、↑↓ 捲動，Esc 回到 prompt |
+| Open the notes | Opens automatically when a session starts |
+| Collapse the panel | Press `◂ 收合` at the panel's top right, type `/notes`, or use the shortcut |
+| Expand the panel | Press `▸ 記事 N 則` above the prompt, type `/notes`, or use the shortcut |
+| Add | Fill in a title (optional) and a body, press Enter in either field |
+| Collapse / expand one note | Press `▸` / `▾` on its title row |
+| Collapse / expand all | Press `[ 全部收合 ]` / `[ 全部展開 ]` |
+| Edit | Press `✎`, then Enter or `[ 儲存 ]` to save; saving with both fields empty deletes the note |
+| Delete | Press `✕` (no confirmation) |
+| Keyboard | `ctrl+x tab` to focus the panel, Tab to move, ↑↓ to scroll, Esc to return to the prompt |
 
-- 終端機全螢幕時便籤停靠在側邊，否則顯示在 prompt 上方。自動打開需要終端寬度 ≥ 144 欄，較窄時改顯示展開列。
-- 記事只存在當下 session，關閉後清空。
+- In fullscreen the panel docks beside the transcript; otherwise it sits above the prompt. Opening automatically needs a terminal at least 144 columns wide; narrower terminals show the expand row instead.
+- Notes live in the current session only and are cleared when it ends.
 
-## 快捷鍵（選用）
+## Shortcut (optional)
 
-在 `~/.claude/keybindings.json` 的 `Global` 區塊加一行，就能用 `ctrl+x ctrl+n` 切換面板收合／展開：
+Add one line to the `Global` block of `~/.claude/keybindings.json` to toggle the panel with `ctrl+x ctrl+n`:
 
 ```json
 {
@@ -65,11 +67,11 @@ Claude Code 2.1.287 以上（`claude --version` 確認，`claude update` 升級�
 }
 ```
 
-- 已有 `Global` 區塊就把這一行併進去，不要整段覆蓋；改完重開 session 生效。
-- 組合鍵兩下都帶 `ctrl`，中文輸入法下也能用（不帶修飾鍵的字母會被輸入法攔去組字）。
-- 原理：便籤的收合／展開按鈕掛在 `app:cycleDiffBase` 這個動作上，引擎沒在處理它時就交給便籤；開著 `/diff` 面板時這組鍵會改為切換 diff 比較基準。
+- If you already have a `Global` block, merge the line into it rather than replacing it; restart the session to apply.
+- Both keystrokes carry `ctrl`, so the chord also works with a CJK input method active (bare letters get captured by the IME for composition).
+- How it works: the panel's collapse/expand buttons are attached to the `app:cycleDiffBase` action and receive it whenever the engine is not handling it; while the `/diff` panel is open, the chord cycles the diff base instead.
 
-## 開發
+## Development
 
 ```
 claude plugin validate .
@@ -77,4 +79,4 @@ claude plugin test .
 claude --plugin-dir .
 ```
 
-停用：`/plugin` → Installed 分頁切換開關。
+Disable: `/plugin` → Installed tab → toggle it off.
