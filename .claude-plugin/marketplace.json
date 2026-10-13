@@ -1,6 +1,6 @@
 {
   "name": "dante-mods",
-  "description": "Dante 的 Claude Code mods",
+  "description": "Claude Code mods by jackmel030",
   "owner": { "name": "jackmel030" },
   "plugins": [{ "name": "session-notes", "source": "./" }]
 }

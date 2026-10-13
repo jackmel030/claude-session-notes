@@ -1,7 +1,7 @@
 {
   "name": "session-notes",
-  "version": "0.4.0",
-  "description": "側邊欄記事便籤：本 session 的記事可新增、修改、刪除、收合",
+  "version": "0.4.1",
+  "description": "Sidebar sticky notes for the current session: add, edit, delete and collapse notes",
   "author": { "name": "jackmel030" },
   "types": "./types/index.d.ts"
 }

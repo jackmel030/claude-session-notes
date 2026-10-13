@@ -35,7 +35,7 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await $.command.register({
       name: 'notes',
-      description: '展開或收合本 session 的記事便籤',
+      description: 'Expand or collapse the session notes panel',
     })
     if (!(await read($, isPaneClosed))) {
       const opened = await $.ui.open({ id: PANE, title: TITLE, columns: 40 })
