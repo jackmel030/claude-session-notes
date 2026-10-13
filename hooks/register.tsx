@@ -16,6 +16,11 @@ const draft = atom({ plugin: 'session-notes', key: 'draft' } as const, EMPTY)
 const editDraft = atom({ plugin: 'session-notes', key: 'editDraft' } as const, EMPTY)
 const isPaneClosed = atom({ plugin: 'session-notes', key: 'isPaneClosed' } as const, false)
 
+const WIDE = /[\u1100-\u115f\u2e80-\ua4cf\uac00-\ud7a3\uf900-\ufaff\ufe30-\ufe4f\uff00-\uff60\uffe0-\uffe6]/
+
+const cellWidth = (text: string) =>
+  [...text].reduce((sum, char) => sum + (WIDE.test(char) ? 2 : 1), 0)
+
 const tidy = (input: Draft): Draft | null => {
   const title = input.title.trim()
   const body = input.body.trim()
@@ -123,6 +128,16 @@ export const register: Register = on => {
     const editing = await read($, editingId)
     const newDraft = await read($, draft)
     const changes = await read($, editDraft)
+    const fieldColumns = Math.max(8, e.props.bodyColumns - 18)
+
+    const preview = (key: string, text: string) =>
+      cellWidth(text) > fieldColumns && (
+        <Box key={key}>
+          <Text dimColor wrap="wrap">
+            {text}
+          </Text>
+        </Box>
+      )
 
     const add = (input: Draft) => {
       const note = tidy(input)
@@ -186,6 +201,7 @@ export const register: Register = on => {
             onInput={(title: string) => update($, draft, d => ({ ...d, title }))}
             onSubmit={(title: string) => add({ ...newDraft, title })}
           />
+          {preview('new-title-preview', newDraft.title)}
           <Input
             key="new-body"
             label="Body  "
@@ -195,6 +211,7 @@ export const register: Register = on => {
             onInput={(body: string) => update($, draft, d => ({ ...d, body }))}
             onSubmit={(body: string) => add({ ...newDraft, body })}
           />
+          {preview('new-body-preview', newDraft.body)}
         </Box>
 
         {list.length === 0 ? (
@@ -231,6 +248,7 @@ export const register: Register = on => {
                     onInput={(title: string) => update($, editDraft, d => ({ ...d, title }))}
                     onSubmit={(title: string) => save(note.id, { ...changes, title })}
                   />
+                  {preview(`edit-title-preview-${note.id}`, changes.title)}
                   <Input
                     key={`edit-body-${note.id}`}
                     label="Body  "
@@ -239,6 +257,7 @@ export const register: Register = on => {
                     onInput={(body: string) => update($, editDraft, d => ({ ...d, body }))}
                     onSubmit={(body: string) => save(note.id, { ...changes, body })}
                   />
+                  {preview(`edit-body-preview-${note.id}`, changes.body)}
                 </Box>
                 <Box>
                   <Button

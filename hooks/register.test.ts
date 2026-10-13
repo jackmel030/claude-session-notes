@@ -210,6 +210,34 @@ test('/notes explains a narrow terminal and collapses on the next run', async ($
   expect(calls).toEqual(['open:session-notes', 'open:session-notes', 'close:session-notes'])
 })
 
+for (const surface of SURFACES) {
+  test(`${surface}: shows the whole text below a field once it outgrows the field`, async $ => {
+    const ui = await $.ui.mount({
+      plugin: 'session-notes',
+      surface,
+      component: 'Pane',
+      requestId: 'session-notes',
+      props: paneProps(20),
+    })
+    const long = 'Call the vendor about the delayed shipment and confirm the new date'
+
+    await ui.input({ key: 'new-body', text: 'short', kind: 'change' })
+    expect(await ui.find({ key: 'new-body-preview' })).toBeUndefined()
+
+    await ui.input({ key: 'new-body', text: long, kind: 'change' })
+    expect(await ui.find({ key: 'new-body-preview' })).toMatchObject({ text: long })
+
+    await ui.input({ key: 'new-body', text: '請廠商確認延遲出貨的新日期' + '並回覆客戶', kind: 'change' })
+    expect(await ui.find({ key: 'new-body-preview' })).toBeDefined()
+
+    await ui.input({ key: 'new-body', text: long })
+    expect(await ui.find({ key: 'new-body-preview' })).toBeUndefined()
+
+    await ui.press({ key: 'edit-btn-1' })
+    expect(await ui.find({ key: 'edit-body-preview-1' })).toMatchObject({ text: long })
+  })
+}
+
 test('mobile shows the notes read-only', async $ => {
   const ui = await $.ui.mount({
     plugin: 'session-notes',
